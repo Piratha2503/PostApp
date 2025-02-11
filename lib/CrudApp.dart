@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import 'StateManagementTool.dart';
@@ -123,7 +124,7 @@ class _CrudappState extends State<Crudapp> {
     );
   }
 
-  void _editPost(int index,String title, String body){
+  void _editPost(int index,int id,String title, String body){
 
     TextEditingController title_textEditingController = TextEditingController(text: title);
     TextEditingController description_textEditingController = TextEditingController(text: body);
@@ -210,7 +211,7 @@ class _CrudappState extends State<Crudapp> {
                           side: MaterialStateProperty.all(BorderSide(color: Colors.blueAccent, width: 2)),
                         ),
                         onPressed: () {
-                          itemProvider.updateItem(index, title_textEditingController.text, description_textEditingController.text);
+                          itemProvider.updateItem(index, id,title_textEditingController.text, description_textEditingController.text);
                           Navigator.pop(context);
                         },
                         child: Text(
@@ -240,8 +241,9 @@ class _CrudappState extends State<Crudapp> {
     return Scaffold(
       appBar: PostAppbar(),
       body: itemProvider.items.isEmpty
-          ? Center( child: CircularProgressIndicator() )
+          ? NetworkErrorWidget()
           : ListViewBuilder(),
+      backgroundColor: Colors.white,
       bottomNavigationBar: PostsBottomAppbar()
     );
   }
@@ -260,12 +262,38 @@ class _CrudappState extends State<Crudapp> {
     );
   }
 
+  Widget NetworkErrorWidget(){
+    return Column(
+      children: <Widget>[
+        Center(
+          child: Image.asset("assets/404.jpg"),
+        ),
+        Center(
+            child:
+            SizedBox(
+              width: 250,
+              child: Text("Something wrong with the Network Connection",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.indigoAccent
+                ),
+                textAlign: TextAlign.center,
+              ),
+            )
+        )
+      ],
+    );
+  }
+
   Widget ListViewBuilder(){
     var itemProvider = Provider.of<ItemProvider>(context);
     return ListView.builder(
+      cacheExtent: 500,
         itemCount: itemProvider.items.length,
         itemBuilder: (context,index){
-          var item = itemProvider.items[index];
+          var item = itemProvider.items.reversed.toList()[index];
+          int reversed_index = itemProvider.items.length - 1 - index;
           return ListTile(
             title: Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -303,12 +331,12 @@ class _CrudappState extends State<Crudapp> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <IconButton>[
                             IconButton(onPressed: (){
-                              _editPost(index,item["title"], item["body"]);
+                              _editPost(reversed_index,item["id"],item["title"], item["body"]);
                             },
                               icon: Icon(Icons.edit,color: CupertinoColors.activeBlue),),
 
                             IconButton(onPressed: (){
-                              itemProvider.deleteItem(index);
+                              itemProvider.deleteItem(item["id"],reversed_index);
                             }, icon: Icon(Icons.delete,color: CupertinoColors.destructiveRed,)),
                           ],
                         ),

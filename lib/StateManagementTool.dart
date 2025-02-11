@@ -45,8 +45,8 @@ class ItemProvider with ChangeNotifier{
       notifyListeners();
     }
   }
-  Future<void> updateItem(int index,String title, String body) async{
-    int id = index - 1;
+  Future<void> updateItem(int index,int id,String title, String body) async{
+
     final response = await http.put(
       Uri.parse("https://jsonplaceholder.typicode.com/post/$id"),
       body: json.encode({
@@ -56,7 +56,7 @@ class ItemProvider with ChangeNotifier{
       headers: {"Content-Type":"application/json"},
     );
     if(response.statusCode >= 200){
-      print("Update Success");
+      print("id Number $id and index number $index Updated Successfully");
       var item = items[index];
       item["title"] = title;
       item["body"] = body;
@@ -65,11 +65,11 @@ class ItemProvider with ChangeNotifier{
 
   }
 
-  Future<void> deleteItem(int id) async{
+  Future<void> deleteItem(int id,int index) async{
     final response = await http.delete( Uri.parse("https://jsonplaceholder.typicode.com/post/$id"),);
     if(response.statusCode >= 200){
-      print("Deleted Success");
-      items.removeAt(id);
+      print("id Number $id and index number $index Deleted Successfully");
+      items.removeAt(index);
       notifyListeners();
     }
 
